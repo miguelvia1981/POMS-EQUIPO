@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>POMS · Estado de ánimo del equipo</title>
+<style>
+:root{--bg:#f6f7f5;--card:#fff;--tx:#1d2420;--mu:#5d6862;--bd:#dfe3df;--ac:#1f7a5a;--ac2:#e5f2ec;--red:#b42318;--redbg:#fde8e6;--amb:#9a5b00;--ambbg:#fff1d6;--grn:#176b46;--grnbg:#def3e8;--gry:#505a54;--grybg:#eceeec}
+@media(prefers-color-scheme:dark){:root{--bg:#121513;--card:#1b201d;--tx:#e8ece9;--mu:#9aa6a0;--bd:#2d3430;--ac:#4cc19a;--ac2:#1d2f27;--red:#ff9b91;--redbg:#3a1d1a;--amb:#ffc56b;--ambbg:#392b10;--grn:#7fe0b3;--grnbg:#16301f;--gry:#b6c0ba;--grybg:#262c28}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:12px 14px 80px}
+h1{font-size:20px;margin:6px 0 2px}h2{font-size:17px;margin:0 0 8px}h3{font-size:15px;margin:14px 0 6px}
+.mu{color:var(--mu)}.sm{font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:12px 0}
+.nav{display:flex;gap:6px;overflow-x:auto;padding:6px 0;position:sticky;top:0;background:var(--bg);z-index:5}
+.nav button{white-space:nowrap}
+button,.btn{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:9px;padding:8px 12px;cursor:pointer}
+button.p{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:600}
+button.on{background:var(--ac2);border-color:var(--ac);font-weight:600}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.dg{color:var(--red);border-color:var(--red)}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:9px;padding:8px 10px;width:100%}
+textarea{min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+label{display:block;font-size:13px;color:var(--mu);margin:8px 0 3px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:0 0 auto}.row .g{flex:1 1 180px}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.stat{background:var(--ac2);border-radius:10px;padding:10px}.stat b{font-size:22px;display:block}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:6px 7px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}th{color:var(--mu);font-weight:600;cursor:default}
+.tw{overflow-x:auto}
+.tag{display:inline-block;border-radius:99px;padding:1px 9px;font-size:12px;font-weight:600}
+.t-red{background:var(--redbg);color:var(--red)}.t-amb{background:var(--ambbg);color:var(--amb)}.t-grn{background:var(--grnbg);color:var(--grn)}.t-none{background:var(--grybg);color:var(--gry)}
+.warn{background:var(--ambbg);color:var(--amb);border-radius:9px;padding:9px 11px;margin:8px 0;font-size:13px}
+.bad{background:var(--redbg);color:var(--red);border-radius:9px;padding:9px 11px;margin:8px 0;font-size:13px}
+.ok{background:var(--grnbg);color:var(--grn);border-radius:9px;padding:9px 11px;margin:8px 0;font-size:13px}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#222;color:#fff;border-radius:9px;padding:9px 14px;z-index:20;font-size:14px;max-width:90vw}
+/* formulario */
+.it{padding:10px 0;border-bottom:1px solid var(--bd)}.it.miss{background:var(--redbg);border-radius:8px;padding:10px 8px}
+.it .w{font-weight:600;margin-bottom:6px}
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.opts button{padding:8px 2px;text-align:center;line-height:1.15}.opts button b{display:block;font-size:17px}.opts button small{font-size:10px;color:var(--mu)}
+.opts button.sel{background:var(--ac);color:#fff;border-color:var(--ac)}.opts button.sel small{color:#fff}
+.bar{height:8px;background:var(--grybg);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac)}
+.code{word-break:break-all;font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--grybg);padding:10px;border-radius:9px;user-select:all}
+.legend{position:sticky;top:0;background:var(--card);padding:6px 0;font-size:12px;color:var(--mu);border-bottom:1px solid var(--bd);z-index:4}
+svg text{fill:var(--tx);font-size:11px}svg .m{fill:var(--mu)}
+ul.c{margin:4px 0 4px 18px;padding:0}
+.pl{page-break-inside:avoid}
+@media print{.nav,.noprint,button,.toast{display:none!important}body{background:#fff;color:#000}.card{border:1px solid #bbb;break-inside:avoid}.pl{page-break-after:always}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script id="core">
+'use strict';
+/* ===================== NÚCLEO: ítems, puntuación, análisis ===================== */
+// [nº, palabra, subescala, inverso]   T=Tensión D=Depresión A=Ira V=Vigor F=Fatiga C=Confusión X=relleno
+const ITEMS=[[1,'Amistoso','X'],[2,'Tenso','T'],[3,'Enfadado','A'],[4,'Desgastado','F'],[5,'Infeliz','D'],[6,'Con la mente despejada','X'],[7,'Animado','V'],[8,'Confuso','C'],[9,'Arrepentido de cosas hechas','D'],[10,'Tembloroso','T'],[11,'Apático','F'],[12,'Fastidiado','A'],[13,'Considerado','X'],[14,'Triste','D'],[15,'Activo','V'],[16,'Con los nervios de punta','T'],[17,'Gruñón','A'],[18,'Melancólico','D'],[19,'Enérgico','V'],[20,'Con pánico','T'],[21,'Desesperanzado','D'],[22,'Relajado','T',1],[23,'Indigno','D'],[24,'Rencoroso','A'],[25,'Comprensivo','X'],[26,'Intranquilo','T'],[27,'Agitado','T'],[28,'Incapaz de concentrarme','C'],[29,'Fatigado','F'],[30,'Servicial','X'],[31,'Molesto','A'],[32,'Desanimado','D'],[33,'Resentido','A'],[34,'Nervioso','T'],[35,'Solitario','D'],[36,'Desdichado','D'],[37,'Aturdido','C'],[38,'Alegre','V'],[39,'Amargado','A'],[40,'Exhausto','F'],[41,'Ansioso','T'],[42,'Dispuesto a pelear','A'],[43,'De buen carácter','X'],[44,'Lúgubre','D'],[45,'Desesperado','D'],[46,'Lento','F'],[47,'Rebelde','A'],[48,'Indefenso','D'],[49,'Cansado','F'],[50,'Desconcertado','C'],[51,'Alerta','V'],[52,'Engañado','A'],[53,'Furioso','A'],[54,'Eficiente','C',1],[55,'Confiado','X'],[56,'Lleno de energía','V'],[57,'De mal genio','A'],[58,'Sin valor','D'],[59,'Olvidadizo','C'],[60,'Despreocupado','V'],[61,'Aterrado','D'],[62,'Culpable','D'],[63,'Vigoroso','V'],[64,'Inseguro','C'],[65,'Hecho polvo','F']];
+const FK=['T','D','A','V','F','C'];
+const FM={
+ T:{n:'Tensión-Ansiedad',s:'Tensión',max:36,neg:1,col:'#d97706',d:'Tensión, nerviosismo e inquietud.'},
+ D:{n:'Depresión-Abatimiento',s:'Depresión',max:60,neg:1,col:'#2563eb',d:'Ánimo bajo, desánimo, soledad y sentimiento de culpa o inutilidad.'},
+ A:{n:'Ira-Hostilidad',s:'Ira',max:48,neg:1,col:'#dc2626',d:'Irritabilidad, enfado y resentimiento.'},
+ V:{n:'Vigor-Actividad',s:'Vigor',max:32,neg:0,col:'#16a34a',d:'Energía, ganas y vitalidad. Es la única subescala positiva: cuanto más alta, mejor.'},
+ F:{n:'Fatiga-Inercia',s:'Fatiga',max:28,neg:1,col:'#7c3aed',d:'Cansancio, lentitud y falta de energía.'},
+ C:{n:'Confusión-Desconcierto',s:'Confusión',max:28,neg:1,col:'#0891b2',d:'Dificultad para concentrarse, despiste e inseguridad.'}
+};
+const LABELS=['Nada','Un poco','Moderadamente','Bastante','Muchísimo'];
+const SHORT=['Nada','Poco','Medio','Bastante','Mucho'];
+
+function scoreAnswers(a){
+  const s={T:0,D:0,A:0,V:0,F:0,C:0};
+  ITEMS.forEach(it=>{if(it[2]==='X')return;const v=a[it[0]-1];s[it[2]]+=it[3]?4-v:v;});
+  s.TMD=s.T+s.D+s.A+s.F+s.C-s.V+100;
+  return s;
+}
+const mean=v=>v.length?v.reduce((x,y)=>x+y,0)/v.length:0;
+const sdev=v=>{if(v.length<2)return 0;const m=mean(v);return Math.sqrt(v.reduce((x,y)=>x+(y-m)*(y-m),0)/(v.length-1));};
+const f1=x=>(Math.round(x*10)/10).toFixed(1).replace('.',',');
+const sg=x=>(x>=0?'+':'−')+f1(Math.abs(x));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const fdate=s=>{const p=String(s).split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:s;};
+function nextTuesday(){const d=new Date();d.setDate(d.getDate()+((2-d.getDay()+7)%7));return iso(d);}
+const uid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-3);
+
+const b64e=o=>{const b=new TextEncoder().encode(JSON.stringify(o));let s='';b.forEach(x=>s+=String.fromCharCode(x));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
+const b64d=t=>{t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';const s=atob(t);return JSON.parse(new TextDecoder().decode(Uint8Array.from(s,c=>c.charCodeAt(0))));};
+
+// código que genera el jugador
+function makeCode(sid,date,name,a,secs){return 'POMS1.'+b64e({s:sid,d:date,n:name,a:a.join(''),t:secs,ts:Date.now()});}
+function parseCodes(text){
+  const m=String(text).match(/POMS1\.[A-Za-z0-9_-]+/g)||[];const ok=[],bad=[];
+  m.forEach(c=>{try{const o=b64d(c.slice(6));
+    if(typeof o.a!=='string'||!/^[0-4]{65}$/.test(o.a)||!o.n||!o.s)throw 0;
+    ok.push({s:String(o.s).slice(0,20),d:String(o.d||'').slice(0,10),name:String(o.n).slice(0,60),a:o.a.split('').map(Number),t:+o.t||0,ts:+o.ts||Date.now()});
+  }catch(e){bad.push(c.slice(0,16)+'…');}});
+  return{ok,bad};
+}
+
+function quality(r){
+  const a=r.a,w=[];
+  if(a.every(x=>x===a[0]))w.push('Todas las respuestas son iguales');
+  if(r.t&&r.t<90)w.push('Rellenado en menos de 90 segundos');
+  if(a[1]>=3&&a[21]>=3)w.push('Marcó muy alto «Tenso» y «Relajado» a la vez');
+  if(a[7]>=3&&a[53]>=3)w.push('Marcó muy alto «Confuso» y «Eficiente» a la vez');
+  return w;
+}
+
+/* ---- Análisis. db = {players,sessions,responses} ---- */
+function analyzeSession(db,sid,excl){
+  const sess=db.sessions.find(s=>s.id===sid);if(!sess)return null;
+  const rows=db.responses.filter(r=>r.s===sid).map(r=>({r,key:norm(r.name),sc:scoreAnswers(r.a),q:quality(r)}));
+  const base=excl?rows.filter(x=>!x.q.length):rows;
+  const n=base.length,hasTeam=n>=8;
+  const st={};[...FK,'TMD'].forEach(k=>{const v=base.map(x=>x.sc[k]);st[k]={m:mean(v),sd:sdev(v)};});
+  const prevSess=db.sessions.filter(s=>s.id!==sid&&s.date<sess.date).sort((a,b)=>a.date<b.date?-1:1);
+  rows.forEach(x=>{
+    x.z={};[...FK,'TMD'].forEach(k=>x.z[k]=hasTeam&&st[k].sd>0?(x.sc[k]-st[k].m)/st[k].sd:null);
+    x.rank=hasTeam?base.filter(y=>y.sc.TMD<x.sc.TMD).length/n:null;
+    // histórico personal
+    x.hist=[];prevSess.forEach(ps=>{const rr=db.responses.find(r=>r.s===ps.id&&norm(r.name)===x.key);
+      if(rr&&!(excl&&quality(rr).length))x.hist.push({date:ps.date,sc:scoreAnswers(rr.a)});});
+    x.bl=null;
+    if(x.hist.length>=4){x.bl={};[...FK,'TMD'].forEach(k=>{const v=x.hist.map(h=>h.sc[k]);const mx=k==='TMD'?100:FM[k].max;x.bl[k]={m:mean(v),sd:Math.max(sdev(v),0.10*mx)};});}
+    buildConclusion(x,hasTeam,db);
+  });
+  return{sess,rows,base,n,hasTeam,st};
+}
+
+function buildConclusion(x,hasTeam,db){
+  const flags=[],tips={},sc=x.sc;
+  const nm=(db.players.find(p=>norm(p.name)===x.key)||{name:x.r.name}).name;x.name=nm;
+  FK.forEach(k=>{
+    const m=FM[k];
+    if(hasTeam&&x.z[k]!==null){
+      const z=x.z[k];
+      if(m.neg){ if(z>=2)flags.push({k,sev:2,t:`${m.s} muy alta respecto al equipo (z = ${sg(z)})`}); else if(z>=1.5)flags.push({k,sev:1,t:`${m.s} alta respecto al equipo (z = ${sg(z)})`}); }
+      else { if(z<=-2)flags.push({k,sev:2,t:`Vigor muy bajo respecto al equipo (z = ${sg(z)})`}); else if(z<=-1.5)flags.push({k,sev:1,t:`Vigor bajo respecto al equipo (z = ${sg(z)})`}); }
+    }
+    if(x.bl){
+      const ch=(sc[k]-x.bl[k].m)/x.bl[k].sd, bad=m.neg?ch:-ch, abs=Math.abs(sc[k]-x.bl[k].m)/m.max;
+      if(bad>=2&&abs>=0.25)flags.push({k,sev:2,t:`${m.s} ${m.neg?'sube':'baja'} mucho sobre su media personal (${f1(x.bl[k].m)} → ${sc[k]})`});
+      else if(bad>=1&&abs>=0.15)flags.push({k,sev:1,t:`${m.s} ${m.neg?'sube':'baja'} sobre su media personal (${f1(x.bl[k].m)} → ${sc[k]})`});
+    }
+  });
+  let tmdPers=0;
+  if(x.bl){const ch=(sc.TMD-x.bl.TMD.m)/x.bl.TMD.sd,ab=sc.TMD-x.bl.TMD.m;
+    if(ch>=2&&ab>=30){tmdPers=2;flags.push({k:'TMD',sev:2,t:`TMD sube mucho sobre su media personal (${f1(x.bl.TMD.m)} → ${sc.TMD})`});}
+    else if(ch>=1&&ab>=15){tmdPers=1;flags.push({k:'TMD',sev:1,t:`TMD sube sobre su media personal (${f1(x.bl.TMD.m)} → ${sc.TMD})`});}
+  }
+  (function(){})();
+  if(hasTeam&&x.rank!==null&&x.rank>=0.85&&x.z.TMD>=1)flags.push({k:'TMD',sev:1,t:'Alteración total del ánimo (TMD) entre el 15 % más alto del equipo y z ≥ 1'});
+  // bienestar
+  const hs=mean([x.r.a[20],x.r.a[44],x.r.a[47],x.r.a[57]]);
+  x.wellbeing=(sc.D/FM.D.max>0.5)||(x.z.D!==null&&x.z.D>=2)||hs>=3;
+  // perfil
+  const negs=['T','D','A','F','C'];let prof,pk='';
+  if(hasTeam){const vz=x.z.V,nz=mean(negs.map(k=>x.z[k]||0));
+    if(vz>0.25&&nz<-0.25){prof='Perfil iceberg (favorable): vigor por encima y malestar por debajo del grupo.';pk='ice';}
+    else if(vz<-0.25&&nz>0.25){prof='Perfil iceberg invertido o aplanado (desfavorable): vigor por debajo y malestar por encima del grupo.';pk='inv';}
+    else prof='Perfil intermedio respecto al grupo.';
+    x.profRef='equipo';
+  } else if(x.bl){const vz=(sc.V-x.bl.V.m)/x.bl.V.sd,nz=mean(negs.map(k=>(sc[k]-x.bl[k].m)/x.bl[k].sd));
+    if(vz>0.25&&nz<-0.25){prof='Mejor que su media personal: más vigor y menos malestar.';pk='ice';}
+    else if(vz<-0.25&&nz>0.25){prof='Peor que su media personal: menos vigor y más malestar.';pk='inv';}
+    else prof='Similar a su media personal.';
+    x.profRef='su histórico';
+  } else {const vp=sc.V/FM.V.max*100,np=mean(negs.map(k=>sc[k]/FM[k].max*100));
+    if(vp>=55&&np<25){prof='Perfil iceberg orientativo: vigor alto y malestar bajo (valores absolutos).';pk='ice';}
+    else if(vp<40&&np>40){prof='Perfil desfavorable orientativo: vigor bajo y malestar alto (valores absolutos).';pk='inv';}
+    else prof='Perfil intermedio (valores absolutos, sin grupo ni histórico para comparar).';
+    x.profRef='valores absolutos';
+  }
+  x.prof=prof;x.pk=pk;x.flags=flags;
+  const hasRef=hasTeam||!!x.bl;
+  const sev=Math.max(0,...flags.map(f=>f.sev));
+  const n2=flags.filter(f=>f.sev===2).length;
+  const red=x.wellbeing||(x.z.TMD!==null&&x.z.TMD>=2)||n2>=2||tmdPers===2;
+  x.level=red?'red':sev>=1?'amber':hasRef?'green':'none';
+  // consejos
+  const tp=(k,t)=>{tips[k]=t;};
+  flags.forEach(f=>{
+    if(f.k==='F'||f.k==='V')tp('FV','Revisa la carga y la recuperación: valora bajar volumen o intensidad unos días y pregúntale por sueño, trabajo o estudios.');
+    if(f.k==='T')tp('T','Tensión alta: habla con él o ella para saber qué le preocupa (partido, rol, vida fuera del fútbol) y refuerza rutinas de activación y respiración antes de competir.');
+    if(f.k==='D')tp('D','Ánimo bajo: conversación individual, con escucha y sin presionar; comprueba si se mantiene en las próximas semanas.');
+    if(f.k==='A')tp('A','Irritabilidad alta: mira si hay tensiones en el vestuario o frustración por minutos o rol, y habla con calma antes de que escale.');
+    if(f.k==='C')tp('C','Confusión o despiste: simplifica los mensajes tácticos, confirma que entiende su rol y vigila la sobrecarga mental.');
+  });
+  x.tips=Object.values(tips);
+  // texto
+  const L={red:'señales de alerta que conviene atender',amber:'algunas señales a vigilar',green:'un estado de ánimo sin señales de alerta',none:'datos insuficientes para comparar (faltan respuestas del equipo y sesiones previas)'};
+  const P=[`${nm} presenta ${L[x.level]}. ${prof}`];
+  if(flags.length)P.push('Señales: '+flags.map(f=>f.t).join('; ')+'.');
+  if(x.bl){const d=sc.TMD-x.bl.TMD.m;P.push(`TMD de ${sc.TMD} frente a su media personal de ${f1(x.bl.TMD.m)} (${sg(d)}), con ${x.hist.length} sesiones previas.`);}
+  else P.push(`Todavía no hay 4 sesiones previas de ${nm}, por lo que no se calcula el cambio frente a su propia media.`);
+  if(x.q.length)P.push('Calidad de la respuesta dudosa: '+x.q.join('; ')+'.');
+  x.paras=P;
+}
+
+/* ---- Evolución del equipo ---- */
+function teamEvolution(db,excl){
+  return db.sessions.slice().sort((a,b)=>a.date<b.date?-1:1).map(s=>{
+    let rs=db.responses.filter(r=>r.s===s.id);if(excl)rs=rs.filter(r=>!quality(r).length);
+    const sc=rs.map(r=>scoreAnswers(r.a));
+    const o={date:s.date,n:rs.length};[...FK,'TMD'].forEach(k=>o[k]=sc.length?mean(sc.map(x=>x[k])):null);return o;
+  }).filter(o=>o.n>0);
+}
+function playerEvolution(db,key,excl){
+  return db.sessions.slice().sort((a,b)=>a.date<b.date?-1:1).map(s=>{
+    const r=db.responses.find(r=>r.s===s.id&&norm(r.name)===key);if(!r)return null;
+    if(excl&&quality(r).length)return null;return Object.assign({date:s.date},scoreAnswers(r.a));
+  }).filter(Boolean);
+}
+if(typeof module!=='undefined')module.exports={ITEMS,FK,FM,scoreAnswers,parseCodes,makeCode,analyzeSession,teamEvolution,playerEvolution,quality,norm,b64e,b64d};
+</script>
+
+<script id="ui">
+'use strict';
+/* ===================== ALMACENAMIENTO ===================== */
+const KEY='poms_v1';
+let DB={players:[],sessions:[],responses:[],settings:{wa:'',club:''}};
+(function(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);DB=Object.assign(DB,o);}}catch(e){}})();
+let SAVE_OK=true;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));SAVE_OK=true;}catch(e){SAVE_OK=false;}}
+const S={tab:'hoy',sid:null,pid:null,exclude:true,sort:'estado',report:false,confirm:'',importMsg:null,restoreMsg:''};
+
+function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),2600);}
+function copy(text,msg){
+  const done=()=>toast(msg||'Copiado');
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,()=>fb());return;}}catch(e){}
+  fb();
+  function fb(){const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();try{document.execCommand('copy');done();}catch(e){toast('No se pudo copiar: selecciónalo a mano');}t.remove();}
+}
+function download(name,text,type){
+  try{const b=new Blob([text],{type:type||'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();toast('Descargando '+name);}
+  catch(e){toast('No se pudo descargar; usa «Copiar»');}
+}
+const $=id=>document.getElementById(id);
+
+/* ===================== MODO JUGADOR ===================== */
+const params=new URLSearchParams(location.search);
+const FORM=(()=>{const f=params.get('f');if(!f)return null;try{const o=b64d(f);if(!o.s)throw 0;return o;}catch(e){return{err:1};}})();
+
+let F={step:-1,name:'',other:'',consent:false,a:Array(65).fill(null),t0:0,code:'',miss:false};
+const PAGE=13,NP=5;
+
+function renderForm(){
+  const el=$('app');
+  if(FORM.err){el.innerHTML='<div class="card"><h2>Enlace no válido</h2><p>Pídele al entrenador que te vuelva a enviar el enlace.</p></div>';return;}
+  const club=FORM.c?esc(FORM.c):'';
+  let sentBefore=false;try{sentBefore=!!localStorage.getItem('poms_sent_'+FORM.s);}catch(e){}
+  let h=`<h1>Cuestionario de estado de ánimo (POMS)</h1><div class="mu sm">${club?club+' · ':''}${FORM.d?fdate(FORM.d):''}</div>`;
+  if(F.step===-1){
+    const names=(FORM.p||[]).map(n=>`<option>${esc(n)}</option>`).join('');
+    h+=`<div class="card"><h2>Antes de empezar</h2>
+    <ul class="c"><li>Verás una lista de 65 palabras que describen sentimientos y estados de ánimo.</li>
+    <li>Marca cuánto te has sentido así <b>durante la última semana, incluyendo hoy</b>.</li>
+    <li>Escala: <b>0</b> Nada · <b>1</b> Un poco · <b>2</b> Moderadamente · <b>3</b> Bastante · <b>4</b> Muchísimo.</li>
+    <li>Contesta a <b>todas</b>, sin dejar ninguna en blanco.</li>
+    <li>No hay respuestas buenas ni malas. Marca tu primera impresión, sin pensarlo mucho.</li>
+    <li>Rellénalo tú solo, en tu móvil, sin comentarlo con compañeros. Tarda unos 5 minutos.</li>
+    <li>Sé sincero: sirve para ajustar los entrenamientos y cuidarte. Solo lo verá el entrenador. No es un test médico ni un diagnóstico.</li></ul></div>
+    <div class="card">${sentBefore?'<div class="warn">Este móvil ya envió una respuesta para este cuestionario. Si es otra persona, continúa; si eres tú, no hace falta repetirlo.</div>':''}
+    <label for="nm">¿Quién eres?</label><select id="nm"><option value="">Elige tu nombre…</option>${names}<option value="__o">No aparezco en la lista</option></select>
+    <div id="otw" style="display:none"><label for="ot">Escribe tu nombre y apellido</label><input id="ot" maxlength="50"></div>
+    <label class="row" style="margin-top:12px;color:var(--tx);font-size:14px"><input id="cs" type="checkbox" style="width:auto"> <span class="g">Acepto que mis respuestas se guarden con mi nombre y que solo las vea el entrenador.</span></label>
+    <div id="er" class="bad" style="display:none"></div>
+    <p><button class="p" data-a="fstart" style="width:100%">Empezar</button></p></div>`;
+  } else if(F.step<NP){
+    const lo=F.step*PAGE,hi=Math.min(65,lo+PAGE),done=F.a.filter(x=>x!==null).length;
+    h+=`<div class="card"><div class="row"><span class="g sm">Página ${F.step+1} de ${NP} · ${done}/65 contestadas</span></div><div class="bar"><i style="width:${done/65*100}%"></i></div>
+    <div class="legend">0 Nada · 1 Un poco · 2 Moderadamente · 3 Bastante · 4 Muchísimo — <b>última semana, incluyendo hoy</b></div>`;
+    for(let n=lo+1;n<=hi;n++){const it=ITEMS[n-1];
+      h+=`<div class="it${F.miss&&F.a[n-1]===null?' miss':''}" id="it${n}"><div class="w">${n}. ${esc(it[1])}</div><div class="opts">${[0,1,2,3,4].map(v=>`<button data-a="ans" data-n="${n}" data-v="${v}" class="${F.a[n-1]===v?'sel':''}"><b>${v}</b><small>${SHORT[v]}</small></button>`).join('')}</div></div>`;}
+    h+=`<div id="er" class="bad" style="display:${F.miss?'block':'none'}">Faltan palabras por contestar en esta página (marcadas en rojo).</div>
+    <div class="row" style="margin-top:12px">${F.step>0?'<button data-a="fprev">Anterior</button>':''}<span class="g"></span><button class="p" data-a="fnext">${F.step===NP-1?'Enviar':'Siguiente'}</button></div></div>`;
+  } else {
+    const link=FORM.w?`https://wa.me/${FORM.w}?text=`:'https://wa.me/?text=';
+    const msg=`POMS ${F.name}\n${F.code}`;
+    h+=`<div class="card"><h2>Último paso: envía tu código</h2>
+    <p>Tus respuestas están listas. Para que le lleguen al entrenador, <b>envíale este código por WhatsApp</b>. Hasta que lo reciba, tu respuesta no cuenta.</p>
+    <p><a class="btn p" style="display:block;text-align:center;text-decoration:none;padding:11px;border-radius:9px;background:var(--ac);color:#fff;font-weight:600" href="${link}${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar por WhatsApp</a></p>
+    <p><button data-a="fcopy" style="width:100%">Copiar mi código</button></p>
+    <div class="code" id="cd">${esc(F.code)}</div>
+    <p class="sm mu">Si WhatsApp no se abre, copia el código y pégalo en un mensaje al entrenador. No verás resultados: los analiza el entrenador. ¡Gracias!</p></div>`;
+  }
+  el.innerHTML=h;
+  if(F.step===-1){const s=$('nm');if(s){s.value=F.name&&FORM.p&&FORM.p.includes(F.name)?F.name:(F.other?'__o':'');s.onchange=()=>{$('otw').style.display=s.value==='__o'?'block':'none';};if(s.value==='__o')$('otw').style.display='block';$('cs').checked=F.consent;}}
+  window.scrollTo(0,0);
+}
+
+/* ===================== MODO ENTRENADOR ===================== */
+const TABS=[['hoy','Sesión'],['equipo','Equipo'],['jug','Jugadores'],['plantilla','Plantilla'],['guia','Guía'],['datos','Datos']];
+const lvl={red:['Prioridad','t-red'],amber:['Atención','t-amb'],green:['Sin alertas','t-grn'],none:['Sin referencia','t-none']};
+const tag=l=>`<span class="tag ${lvl[l][1]}">${lvl[l][0]}</span>`;
+const sessSorted=()=>DB.sessions.slice().sort((a,b)=>a.date<b.date?1:-1);
+function curSid(){if(!S.sid||!DB.sessions.find(s=>s.id===S.sid))S.sid=(sessSorted()[0]||{}).id||null;return S.sid;}
+function baseUrl(){return location.protocol==='file:'?location.href.split('?')[0]:location.origin+location.pathname;}
+function formLink(s){
+  const names=DB.players.filter(p=>p.active).map(p=>p.name);
+  const o={s:s.id,d:s.date,p:names};if(DB.settings.club)o.c=DB.settings.club;if(DB.settings.wa)o.w=DB.settings.wa;
+  return baseUrl()+'?f='+b64e(o);
+}
+
+function chartBars(x,st,hasTeam){
+  const W=560,H=6*30+14;let g='';
+  FK.forEach((k,i)=>{const y=8+i*30,p=x.sc[k]/FM[k].max*100,bw=330;
+    g+=`<text x="0" y="${y+14}">${FM[k].s}</text><rect x="110" y="${y+2}" width="${bw}" height="16" rx="4" fill="var(--grybg)"/><rect x="110" y="${y+2}" width="${bw*p/100}" height="16" rx="4" fill="${FM[k].col}"/>`;
+    if(hasTeam){const tp=st[k].m/FM[k].max*100;g+=`<rect x="${110+bw*tp/100-1}" y="${y-1}" width="2.5" height="22" fill="var(--tx)"/>`;}
+    g+=`<text x="${110+bw+8}" y="${y+14}">${x.sc[k]}/${FM[k].max} (${Math.round(p)} %)</text>`;});
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Perfil POMS">${g}</svg>${hasTeam?'<div class="sm mu">La marca negra indica la media del equipo.</div>':''}`;
+}
+function chartLines(labels,series){
+  const W=620,H=230,l=34,r=90,t=10,b=28,iw=W-l-r,ih=H-t-b;
+  const xs=i=>labels.length===1?l+iw/2:l+iw*i/(labels.length-1),ys=v=>t+ih*(1-v/100);
+  let g='';[0,25,50,75,100].forEach(v=>{g+=`<line x1="${l}" x2="${l+iw}" y1="${ys(v)}" y2="${ys(v)}" stroke="var(--bd)"/><text class="m" x="${l-6}" y="${ys(v)+4}" text-anchor="end">${v}</text>`;});
+  labels.forEach((lb,i)=>{g+=`<text class="m" x="${xs(i)}" y="${H-8}" text-anchor="middle">${fdate(lb).slice(0,5)}</text>`;});
+  series.forEach(s=>{const pts=s.v.map((v,i)=>v==null?null:[xs(i),ys(v)]).filter(Boolean);
+    if(pts.length>1)g+=`<polyline fill="none" stroke="${s.col}" stroke-width="2" points="${pts.map(p=>p.join(',')).join(' ')}"/>`;
+    pts.forEach(p=>g+=`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${s.col}"/>`);
+    const last=pts[pts.length-1];if(last)g+=`<text x="${last[0]+7}" y="${last[1]+4}" fill="${s.col}" style="fill:${s.col}">${s.name}</text>`;});
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Evolución">${g}</svg><div class="sm mu">Eje vertical: % de la puntuación máxima de cada subescala.</div>`;
+}
+const evSeries=ev=>FK.map(k=>({name:FM[k].s,col:FM[k].col,v:ev.map(o=>o[k]==null?null:o[k]/FM[k].max*100)}));
+
+function playerCard(x,A){
+  const d=x.sc;
+  let h=`<div class="card pl"><div class="row"><h2 class="g">${esc(x.name)} ${tag(x.level)}${x.q.length?' <span class="tag t-amb">Respuesta dudosa</span>':''}</h2><span class="sm mu">${fdate(A.sess.date)}</span></div>`;
+  if(x.wellbeing)h+=`<div class="bad"><b>Aviso de bienestar.</b> Conviene hablar con el jugador en privado; si la situación se mantiene, valorar derivarlo a un profesional. Es una señal orientativa, no un diagnóstico.</div>`;
+  h+=chartBars(x,A.st,A.hasTeam);
+  h+=`<div class="tw"><table><tr><th>Subescala</th><th>Bruta</th><th>Máx.</th><th>% máx.</th><th>Media equipo</th><th>z equipo</th><th>Media personal</th></tr>`;
+  FK.forEach(k=>{h+=`<tr><td>${FM[k].n}</td><td>${d[k]}</td><td>${FM[k].max}</td><td>${Math.round(d[k]/FM[k].max*100)} %</td><td>${A.hasTeam?f1(A.st[k].m):'—'}</td><td>${x.z[k]!==null?sg(x.z[k]):'—'}</td><td>${x.bl?f1(x.bl[k].m):'—'}</td></tr>`;});
+  h+=`<tr><td><b>TMD</b></td><td><b>${d.TMD}</b></td><td>—</td><td>—</td><td>${A.hasTeam?f1(A.st.TMD.m):'—'}</td><td>${x.z.TMD!==null?sg(x.z.TMD):'—'}</td><td>${x.bl?f1(x.bl.TMD.m):'—'}</td></tr></table></div>`;
+  h+=`<h3>Conclusiones</h3>${x.paras.map(p=>`<p style="margin:4px 0">${esc(p)}</p>`).join('')}`;
+  if(x.tips.length)h+=`<h3>Sugerencias</h3><ul class="c">${x.tips.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`;
+  h+=`<p class="sm mu">Interpretación orientativa, no es un diagnóstico. Referencia del perfil: ${x.profRef}.</p></div>`;
+  return h;
+}
+
+function viewHoy(){
+  const sid=curSid(),sess=DB.sessions.find(s=>s.id===sid);
+  let h='';
+  if(location.protocol==='file:')h+=`<div class="warn">Estás abriendo la app desde un archivo. Para que los jugadores abran el enlace, la app tiene que estar publicada en una web.</div>`;
+  h+=`<div class="card"><h2>Nueva sesión</h2><div class="row"><div class="g"><label for="nd">Fecha</label><input type="date" id="nd" value="${nextTuesday()}"></div><button class="p" data-a="newsess" style="margin-top:20px">Crear sesión</button></div>
+  <p class="sm mu">Cada martes, una sesión nueva. Se propone el martes más cercano.</p></div>`;
+  if(!sess)return h+'<div class="card mu">Todavía no hay sesiones. Crea la primera. Antes, da de alta a tus jugadores en «Plantilla».</div>';
+  h+=`<div class="card"><div class="row"><h2 class="g">Sesión del ${fdate(sess.date)}</h2><select id="ss" style="width:auto" data-a="pick">${sessSorted().map(s=>`<option value="${s.id}"${s.id===sid?' selected':''}>${fdate(s.date)}</option>`).join('')}</select></div>`;
+  if(!DB.players.some(p=>p.active))h+=`<div class="warn">No tienes jugadores activos. Añádelos en «Plantilla» antes de enviar el enlace: aparecen en el desplegable del jugador.</div>`;
+  const link=formLink(sess);
+  const intro=`Hola. Rellena el cuestionario POMS (5 min, tú solo, en tu móvil). Contesta a todo con sinceridad: lo veo solo yo. Al terminar, envíame el código que te da la última pantalla.\n${link}`;
+  h+=`<h3>Enlace para los jugadores</h3><div class="code" style="user-select:all">${esc(link)}</div>
+  <div class="row" style="margin-top:8px"><button class="p" data-a="copylink">Copiar enlace</button><a class="btn" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(intro)}">Compartir por WhatsApp</a></div>
+  <p class="sm mu">El enlace incluye la lista de jugadores activos actual. Si añades a alguien después, copia el enlace otra vez.</p>`;
+  const rs=DB.responses.filter(r=>r.s===sid),ak=new Set(rs.map(r=>norm(r.name)));
+  const miss=DB.players.filter(p=>p.active&&!ak.has(norm(p.name)));
+  h+=`<div class="grid" style="margin-top:12px"><div class="stat"><b>${rs.length}</b>respuestas recibidas</div><div class="stat"><b>${miss.length}</b>sin responder</div><div class="stat"><b>${rs.filter(r=>quality(r).length).length}</b>respuestas dudosas</div></div>`;
+  if(miss.length)h+=`<p class="sm"><b>Faltan:</b> ${miss.map(p=>esc(p.name)).join(', ')}</p>`;
+  h+=`</div><div class="card"><h2>Importar respuestas</h2><p class="sm mu">Pega aquí los mensajes de WhatsApp que te envían los jugadores (puedes pegar varios a la vez; se leen los códigos que empiezan por POMS1.).</p><textarea id="imp" placeholder="POMS Juan\nPOMS1.eyJ…"></textarea><p><button class="p" data-a="import">Importar</button></p>`;
+  if(S.importMsg){const m=S.importMsg;h+=`<div class="${m.bad.length?'warn':'ok'}">${m.nuevas} nuevas · ${m.upd} actualizadas · ${m.dup} repetidas ignoradas${m.bad.length?` · ${m.bad.length} códigos no válidos (¿cortados al copiar?)`:''}${m.newp.length?`<br>Jugadores nuevos añadidos a la plantilla: ${esc(m.newp.join(', '))}`:''}</div>`;}
+  h+='</div>';
+  if(rs.length){h+=`<div class="card"><h2>Respuestas de esta sesión</h2><div class="tw"><table><tr><th>Jugador</th><th>Hora</th><th>Duración</th><th>Calidad</th><th></th></tr>${rs.map(r=>{const q=quality(r);return `<tr><td>${esc(r.name)}</td><td>${new Date(r.ts).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</td><td>${r.t?Math.round(r.t/60*10)/10+' min':'—'}</td><td>${q.length?'<span class="tag t-amb" title="'+esc(q.join('; '))+'">Dudosa</span>':'<span class="tag t-grn">OK</span>'}</td><td><button class="dg" data-a="delresp" data-id="${r.id}">${S.confirm==='r'+r.id?'¿Seguro?':'Borrar'}</button></td></tr>`;}).join('')}</table></div></div>`;}
+  h+=`<div class="card"><div class="row"><span class="g sm mu">Cuando todos hayan respondido, ve a «Equipo» y «Jugadores».</span></div></div>`;
+  return h;
+}
+
+function viewEquipo(){
+  const sid=curSid();if(!sid)return '<div class="card mu">Aún no hay sesiones.</div>';
+  const A=analyzeSession(DB,sid,S.exclude);
+  let h=`<div class="card"><div class="row"><select id="ss" data-a="pick" class="g">${sessSorted().map(s=>`<option value="${s.id}"${s.id===sid?' selected':''}>Sesión ${fdate(s.date)}</option>`).join('')}</select>
+  <label class="row" style="margin:0;color:var(--tx)"><input type="checkbox" id="exd" ${S.exclude?'checked':''} data-a="excl" style="width:auto"> Excluir respuestas dudosas de las medias</label></div></div>`;
+  if(!A.rows.length)return h+'<div class="card mu">Esta sesión no tiene respuestas todavía.</div>';
+  if(!A.hasTeam)h+=`<div class="warn">Hay ${A.n} respuestas válidas. Hacen falta al menos 8 para calcular puntuaciones z y comparar con el equipo; hasta entonces solo se muestran valores absolutos.</div>`;
+  h+=`<div class="card"><h2>Perfil medio del equipo</h2><div class="grid">${FK.map(k=>`<div class="stat"><span class="sm">${FM[k].n}</span><b>${f1(A.st[k].m)}</b><span class="sm mu">± ${f1(A.st[k].sd)} · máx. ${FM[k].max}</span></div>`).join('')}<div class="stat"><span class="sm">TMD</span><b>${f1(A.st.TMD.m)}</b><span class="sm mu">± ${f1(A.st.TMD.sd)}</span></div></div></div>`;
+  const watch=A.rows.filter(x=>x.level==='red'||x.level==='amber').sort((a,b)=>(a.level==='red'?0:1)-(b.level==='red'?0:1)||b.sc.TMD-a.sc.TMD);
+  h+=`<div class="card"><h2>Jugadores a vigilar esta semana</h2>`+(watch.length?`<ul class="c">${watch.map(x=>`<li>${tag(x.level)} <a href="#" data-a="goplayer" data-k="${esc(x.key)}">${esc(x.name)}</a> — ${esc(x.flags.slice(0,2).map(f=>f.t).join('; ')||'Aviso de bienestar')}</li>`).join('')}</ul>`:`<p class="mu">Ninguno con señales de alerta${A.hasTeam?'':' (sin grupo suficiente para comparar)'}.</p>`)+'</div>';
+  const rows=A.rows.slice();
+  if(S.sort==='estado')rows.sort((a,b)=>['red','amber','none','green'].indexOf(a.level)-['red','amber','none','green'].indexOf(b.level)||b.sc.TMD-a.sc.TMD);
+  else if(S.sort==='tmd')rows.sort((a,b)=>b.sc.TMD-a.sc.TMD);else rows.sort((a,b)=>a.name.localeCompare(b.name,'es'));
+  h+=`<div class="card"><div class="row"><h2 class="g">Todos los jugadores</h2><select id="so" data-a="sort" style="width:auto"><option value="estado"${S.sort==='estado'?' selected':''}>Ordenar por estado</option><option value="tmd"${S.sort==='tmd'?' selected':''}>Ordenar por TMD</option><option value="nombre"${S.sort==='nombre'?' selected':''}>Ordenar por nombre</option></select></div>
+  <div class="tw"><table><tr><th>Jugador</th>${FK.map(k=>`<th title="${FM[k].n}">${k}</th>`).join('')}<th>TMD</th><th>z TMD</th><th>Estado</th></tr>${rows.map(x=>`<tr><td><a href="#" data-a="goplayer" data-k="${esc(x.key)}">${esc(x.name)}</a>${x.q.length?' ⚠':''}</td>${FK.map(k=>`<td>${x.sc[k]}</td>`).join('')}<td><b>${x.sc.TMD}</b></td><td>${x.z.TMD!==null?sg(x.z.TMD):'—'}</td><td>${tag(x.level)}</td></tr>`).join('')}</table></div>
+  <p class="sm mu">T tensión · D depresión · A ira · V vigor · F fatiga · C confusión. TMD = T+D+A+F+C−V+100. ⚠ = respuesta dudosa.</p>
+  <div class="row noprint"><button data-a="csv">Copiar CSV de la sesión</button><button data-a="csvdl">Descargar CSV</button><button class="p" data-a="report">Informe imprimible</button></div></div>`;
+  const ev=teamEvolution(DB,S.exclude);
+  h+=`<div class="card"><h2>Evolución semanal del equipo</h2>`+(ev.length>=2?chartLines(ev.map(o=>o.date),evSeries(ev)):'<p class="mu">Se mostrará cuando haya al menos 2 sesiones.</p>')+'</div>';
+  return h;
+}
+
+function viewJug(){
+  const keys=new Map();DB.players.forEach(p=>keys.set(norm(p.name),p.name));DB.responses.forEach(r=>{if(!keys.has(norm(r.name)))keys.set(norm(r.name),r.name);});
+  const list=[...keys.entries()].sort((a,b)=>a[1].localeCompare(b[1],'es'));
+  if(!list.length)return '<div class="card mu">Todavía no hay jugadores ni respuestas.</div>';
+  if(!S.pid||!keys.has(S.pid))S.pid=list[0][0];
+  let h=`<div class="card"><select id="pp" data-a="pickp">${list.map(([k,n])=>`<option value="${esc(k)}"${k===S.pid?' selected':''}>${esc(n)}</option>`).join('')}</select></div>`;
+  const ev=playerEvolution(DB,S.pid,false);
+  const sessions=sessSorted().filter(s=>DB.responses.some(r=>r.s===s.id&&norm(r.name)===S.pid));
+  if(!sessions.length)return h+'<div class="card mu">Este jugador todavía no ha respondido ninguna sesión.</div>';
+  const sid=sessions.find(s=>s.id===S.sid)?S.sid:sessions[0].id;
+  const A=analyzeSession(DB,sid,S.exclude),x=A.rows.find(y=>y.key===S.pid);
+  h+=`<div class="card"><label for="ps">Sesión</label><select id="ps" data-a="pick">${sessions.map(s=>`<option value="${s.id}"${s.id===sid?' selected':''}>${fdate(s.date)}</option>`).join('')}</select></div>`;
+  if(x)h+=playerCard(x,A);
+  h+=`<div class="card"><h2>Evolución semana a semana</h2>`+(ev.length>=2?chartLines(ev.map(o=>o.date),evSeries(ev))+`<div class="tw"><table><tr><th>Fecha</th>${FK.map(k=>`<th>${k}</th>`).join('')}<th>TMD</th></tr>${ev.map(o=>`<tr><td>${fdate(o.date)}</td>${FK.map(k=>`<td>${o[k]}</td>`).join('')}<td><b>${o.TMD}</b></td></tr>`).join('')}</table></div>`:'<p class="mu">Se mostrará cuando haya al menos 2 sesiones de este jugador.</p>')+'</div>';
+  if(x){h+=`<div class="card"><h2>Detalle ítem a ítem</h2><div class="tw"><table><tr><th>Nº</th><th>Palabra</th><th>Subescala</th><th>Respuesta</th><th>Puntúa</th></tr>${ITEMS.map(it=>{const v=x.r.a[it[0]-1];return `<tr><td>${it[0]}</td><td>${esc(it[1])}${it[3]?' <span class="mu">(inverso)</span>':''}</td><td>${it[2]==='X'?'relleno':it[2]}</td><td>${v} · ${LABELS[v]}</td><td>${it[2]==='X'?'—':(it[3]?4-v:v)}</td></tr>`;}).join('')}</table></div></div>`;}
+  return h;
+}
+
+function viewPlantilla(){
+  let h=`<div class="card"><h2>Añadir jugadores</h2><label for="bp">Uno por línea (o separados por comas)</label><textarea id="bp" placeholder="Álvaro Ruiz\nIker Serrano"></textarea><p><button class="p" data-a="addp">Añadir</button></p></div>
+  <div class="card"><h2>Plantilla (${DB.players.filter(p=>p.active).length} activos de ${DB.players.length})</h2>`;
+  if(!DB.players.length)h+='<p class="mu">Sin jugadores todavía.</p>';
+  else h+=`<div class="tw"><table>${DB.players.slice().sort((a,b)=>a.name.localeCompare(b.name,'es')).map(p=>`<tr><td>${esc(p.name)}</td><td><button data-a="togp" data-id="${p.id}">${p.active?'Activo':'Inactivo'}</button></td><td><button data-a="renp" data-id="${p.id}">Renombrar</button></td><td><button class="dg" data-a="delp" data-id="${p.id}">${S.confirm==='p'+p.id?'¿Seguro?':'Quitar'}</button></td></tr>`).join('')}</table></div><p class="sm mu">Quitar a un jugador no borra sus respuestas anteriores. Para que un jugador no aparezca en el enlace pero conserve su histórico, ponlo en «Inactivo».</p>`;
+  if(S.rename){const p=DB.players.find(q=>q.id===S.rename);if(p)h+=`<div class="row" style="margin-top:8px"><input id="rn" class="g" value="${esc(p.name)}"><button class="p" data-a="saverename">Guardar nombre</button></div><p class="sm mu">Si cambias el nombre, las respuestas antiguas se enlazan por el nombre anterior: mantén el mismo nombre para no perder el histórico.</p>`;}
+  return h+'</div>';
+}
+
+function viewGuia(){
+  return `<div class="card"><h2>Qué es el POMS</h2><p>El Perfil de los Estados de Ánimo (POMS, McNair, Lorr y Droppleman, 1971) mide el estado de ánimo reciente con 65 palabras. Se contestan de 0 (nada) a 4 (muchísimo) pensando en la última semana, incluida la de hoy. Esta versión puntúa 58 palabras y las 7 restantes son de relleno.</p>
+  <h3>Subescalas</h3><ul class="c">${FK.map(k=>`<li><b>${FM[k].n}</b> (${ITEMS.filter(i=>i[2]===k).length} palabras, 0–${FM[k].max}). ${FM[k].d}</li>`).join('')}</ul>
+  <h3>Cómo se puntúa</h3><ul class="c"><li>Cada subescala es la suma de sus palabras.</li><li>«Relajado» (Tensión) y «Eficiente» (Confusión) se puntúan al revés: 4 menos la respuesta.</li><li><b>TMD</b> (alteración total del estado de ánimo) = Tensión + Depresión + Ira + Fatiga + Confusión − Vigor + 100. Más alto es peor. El +100 solo evita números negativos.</li></ul>
+  <h3>El perfil iceberg</h3><p>En deportistas con buena salud mental el Vigor queda por encima de la referencia y las otras cinco subescalas por debajo: el gráfico parece un iceberg. Con el Vigor bajo y el resto alto, el perfil se invierte o se aplana y suele indicar fatiga acumulada, estrés o mal momento.</p>
+  <h3>Cómo valora la app</h3><ul class="c"><li>No incluye baremos oficiales de población. Compara a cada jugador con <b>el equipo</b> de esa sesión (puntuación z, a partir de 8 respuestas) y con <b>su propia media</b> (a partir de 4 sesiones previas).</li><li>Alerta ámbar: z de +1,5 o más en una subescala negativa (o −1,5 o menos en Vigor), TMD entre el 15 % más alto con z de 1 o más, o un cambio de una desviación sobre su media (con al menos un 15 % de la escala de diferencia). Alerta roja: aviso de bienestar, TMD con z de 2 o más, dos o más señales graves, o una subida muy fuerte del TMD sobre su media.</li><li>El aviso de bienestar salta si Depresión supera el 50 % de su máximo, o z de 2 o más, o las palabras Desesperanzado, Desesperado, Indefenso y Sin valor tienen una media de 3 o más. Los umbrales son orientativos y no están validados clínicamente.</li><li>Una respuesta es «dudosa» si todas las respuestas son iguales, si se tardó menos de 90 s o si hay contradicciones evidentes.</li></ul>
+  <h3>Procedimiento de los martes</h3><ol class="c"><li>Antes del entrenamiento, crea la sesión en «Sesión» y manda el enlace por el grupo.</li><li>Cada jugador lo rellena solo y en su móvil (5 minutos), antes de empezar a entrenar.</li><li>Al terminar, cada jugador te envía su código por WhatsApp.</li><li>Pega los mensajes en «Importar respuestas». Revisa quién falta.</li><li>Mira «Equipo» y «Jugadores». Si hay avisos, habla con esos jugadores esa misma semana.</li><li>Haz copia de seguridad en «Datos» de vez en cuando.</li></ol>
+  <h3>Privacidad</h3><p>Los datos de ánimo son personales y sensibles. Los jugadores deben saber que solo los ve el entrenador. Si hay menores, necesitas el permiso de padres o tutores. Los datos se guardan solo en este navegador de tu dispositivo, no en un servidor.</p>
+  <p class="sm mu">Las 65 palabras en español son una traducción del original inglés hecha para esta app, no el texto oficial de una adaptación validada. Esta herramienta sirve para el seguimiento interno del equipo, no es un instrumento clínico.</p></div>`;
+}
+
+function viewDatos(){
+  const json=JSON.stringify(DB);
+  return `<div class="card"><h2>Ajustes</h2><div class="row"><div class="g"><label for="cl">Nombre del club (sale en el formulario)</label><input id="cl" value="${esc(DB.settings.club||'')}" maxlength="60"></div><div class="g"><label for="wa">Tu WhatsApp con prefijo, solo números (ej. 34600000000)</label><input id="wa" inputmode="numeric" value="${esc(DB.settings.wa||'')}" maxlength="15"></div></div>
+  <p class="sm mu">Con tu número, el botón «Enviar por WhatsApp» del jugador abre directamente el chat contigo. Si lo dejas vacío, el jugador elige a quién enviarlo. Después de cambiar los ajustes, copia el enlace de la sesión otra vez.</p><button class="p" data-a="saveset">Guardar ajustes</button></div>
+  <div class="card"><h2>Copia de seguridad</h2>${SAVE_OK?'':'<div class="bad">Este navegador no permite guardar datos. Haz copia de seguridad antes de cerrar.</div>'}<p class="sm mu">Tus datos viven en este navegador. Si borras los datos del navegador o cambias de móvil u ordenador, se pierden. Guarda una copia cada semana.</p>
+  <div class="row"><button class="p" data-a="bkdl">Descargar copia</button><button data-a="bkcopy">Copiar copia</button></div>
+  <label for="rs">Restaurar copia (pega el contenido)</label><textarea id="rs"></textarea><p><button data-a="restore">Restaurar</button></p>${S.restoreMsg?`<div class="ok">${esc(S.restoreMsg)}</div>`:''}</div>
+  <div class="card"><h2>Borrar todo</h2><button class="dg" data-a="wipe">${S.confirm==='wipe'?'Pulsa otra vez para borrar todo':'Borrar todos los datos'}</button></div>`;
+}
+
+function viewReport(){
+  const sid=curSid(),A=analyzeSession(DB,sid,S.exclude);
+  let h=`<div class="row noprint"><button class="p" onclick="window.print()">Imprimir / guardar PDF</button><button data-a="closereport">Cerrar informe</button></div><h1>Informe POMS — ${fdate(A.sess.date)}</h1><p class="mu sm">${A.rows.length} respuestas. Interpretación orientativa, no es un diagnóstico. Confidencial: solo para el entrenador.</p>`;
+  h+=`<div class="card"><h2>Equipo</h2><div class="grid">${FK.map(k=>`<div class="stat"><span class="sm">${FM[k].s}</span><b>${f1(A.st[k].m)}</b></div>`).join('')}<div class="stat"><span class="sm">TMD</span><b>${f1(A.st.TMD.m)}</b></div></div></div>`;
+  A.rows.sort((a,b)=>['red','amber','none','green'].indexOf(a.level)-['red','amber','none','green'].indexOf(b.level)||b.sc.TMD-a.sc.TMD).forEach(x=>h+=playerCard(x,A));
+  return h;
+}
+
+function renderCoach(){
+  const el=$('app');
+  if(S.report){el.innerHTML=viewReport();return;}
+  const v={hoy:viewHoy,equipo:viewEquipo,jug:viewJug,plantilla:viewPlantilla,guia:viewGuia,datos:viewDatos}[S.tab]();
+  el.innerHTML=`<h1>POMS · Estado de ánimo del equipo</h1><div class="mu sm">${esc(DB.settings.club||'Seguimiento semanal')}</div><div class="nav noprint">${TABS.map(t=>`<button data-a="tab" data-t="${t[0]}" class="${S.tab===t[0]?'on':''}">${t[1]}</button>`).join('')}</div>${v}`;
+}
+
+/* ---- importación ---- */
+function importCodes(text){
+  const {ok,bad}=parseCodes(text);const res={nuevas:0,upd:0,dup:0,bad,newp:[]};
+  ok.forEach(o=>{
+    if(!DB.sessions.find(s=>s.id===o.s))DB.sessions.push({id:o.s,date:/^\d{4}-\d{2}-\d{2}$/.test(o.d)?o.d:iso(new Date()),open:true});
+    const key=norm(o.name);
+    if(!DB.players.find(p=>norm(p.name)===key)){DB.players.push({id:uid(),name:o.name.trim(),active:true});res.newp.push(o.name.trim());}
+    const ex=DB.responses.find(r=>r.s===o.s&&norm(r.name)===key);
+    if(ex){if(ex.ts===o.ts){res.dup++;return;}if(o.ts>ex.ts){Object.assign(ex,{a:o.a,t:o.t,ts:o.ts,name:o.name});res.upd++;}else res.dup++;return;}
+    DB.responses.push({id:uid(),s:o.s,name:o.name.trim(),a:o.a,t:o.t,ts:o.ts});res.nuevas++;
+  });
+  if(ok.length&&!S.sid)S.sid=ok[0].s;
+  save();return res;
+}
+function csvOf(A){
+  const hd=['Fecha','Jugador',...FK.map(k=>FM[k].n),'TMD','z TMD','Estado','Respuesta dudosa'];
+  const rows=A.rows.map(x=>[A.sess.date,x.name,...FK.map(k=>x.sc[k]),x.sc.TMD,x.z.TMD===null?'':f1(x.z.TMD),lvl[x.level][0],x.q.length?'Sí':'No']);
+  return [hd,...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\n');
+}
+
+/* ---- eventos ---- */
+document.addEventListener('change',e=>{const t=e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a;
+  if(a==='pick'){S.sid=t.value;renderCoach();}
+  else if(a==='pickp'){S.pid=t.value;renderCoach();}
+  else if(a==='sort'){S.sort=t.value;renderCoach();}
+  else if(a==='excl'){S.exclude=t.checked;renderCoach();}
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b||b.tagName==='SELECT'||b.tagName==='INPUT'&&b.type==='checkbox')return;const a=b.dataset.a;
+  if(FORM){
+    if(a==='ans'){const n=+b.dataset.n,v=+b.dataset.v;F.a[n-1]=v;const row=$('it'+n);row.classList.remove('miss');row.querySelectorAll('button').forEach(x=>x.classList.toggle('sel',+x.dataset.v===v));
+      const done=F.a.filter(x=>x!==null).length;const p=document.querySelector('.bar i');if(p)p.style.width=(done/65*100)+'%';const s=document.querySelector('.card .sm');if(s)s.textContent=`Página ${F.step+1} de ${NP} · ${done}/65 contestadas`;
+      const er=$('er');if(er&&!F.a.slice(F.step*PAGE,Math.min(65,F.step*PAGE+PAGE)).includes(null)){er.style.display='none';}}
+    else if(a==='fstart'){const sel=$('nm').value,ot=$('ot').value.trim(),er=$('er');
+      const name=sel==='__o'?ot:sel;
+      if(!name){er.textContent='Elige tu nombre o escríbelo.';er.style.display='block';return;}
+      if(!$('cs').checked){er.textContent='Debes aceptar el consentimiento para continuar.';er.style.display='block';return;}
+      F.name=name;F.other=sel==='__o'?ot:'';F.consent=true;F.step=0;F.t0=Date.now();F.miss=false;renderForm();}
+    else if(a==='fprev'){F.step--;F.miss=false;renderForm();}
+    else if(a==='fnext'){const lo=F.step*PAGE,hi=Math.min(65,lo+PAGE);
+      if(F.a.slice(lo,hi).includes(null)){F.miss=true;renderForm();const m=document.querySelector('.it.miss');if(m)m.scrollIntoView({block:'center'});return;}
+      F.miss=false;
+      if(F.step===NP-1){F.code=makeCode(FORM.s,FORM.d||'',F.name,F.a,Math.round((Date.now()-F.t0)/1000));try{localStorage.setItem('poms_sent_'+FORM.s,'1');}catch(e){}F.step=NP;}else F.step++;
+      renderForm();}
+    else if(a==='fcopy'){copy(F.code,'Código copiado');}
+    return;
+  }
+  e.preventDefault&&b.tagName==='A'&&e.preventDefault();
+  if(a==='tab'){S.tab=b.dataset.t;S.confirm='';S.rename=null;}
+  else if(a==='newsess'){const d=$('nd').value;if(!d){toast('Elige una fecha');return;}
+    if(DB.sessions.find(s=>s.date===d)){toast('Ya existe una sesión con esa fecha');S.sid=DB.sessions.find(s=>s.date===d).id;}
+    else{const s={id:uid().slice(0,8),date:d,open:true};DB.sessions.push(s);S.sid=s.id;save();toast('Sesión creada');}S.importMsg=null;}
+  else if(a==='copylink'){const s=DB.sessions.find(x=>x.id===S.sid);copy(formLink(s),'Enlace copiado');return;}
+  else if(a==='import'){const t=$('imp').value;if(!/POMS1\./.test(t)){toast('No encuentro ningún código POMS1.');return;}S.importMsg=importCodes(t);}
+  else if(a==='delresp'){if(S.confirm==='r'+b.dataset.id){DB.responses=DB.responses.filter(r=>r.id!==b.dataset.id);save();S.confirm='';}else{S.confirm='r'+b.dataset.id;}}
+  else if(a==='goplayer'){S.pid=b.dataset.k;S.tab='jug';}
+  else if(a==='csv'){copy(csvOf(analyzeSession(DB,S.sid,S.exclude)),'CSV copiado');return;}
+  else if(a==='csvdl'){const A=analyzeSession(DB,S.sid,S.exclude);download('poms_'+A.sess.date+'.csv','﻿'+csvOf(A),'text/csv');return;}
+  else if(a==='report'){S.report=true;}
+  else if(a==='closereport'){S.report=false;}
+  else if(a==='addp'){const names=$('bp').value.split(/[\n,;]+/).map(x=>x.trim()).filter(Boolean);let n=0;
+    names.forEach(nm=>{if(!DB.players.find(p=>norm(p.name)===norm(nm))){DB.players.push({id:uid(),name:nm.slice(0,60),active:true});n++;}});save();toast(n+' jugadores añadidos');}
+  else if(a==='togp'){const p=DB.players.find(q=>q.id===b.dataset.id);p.active=!p.active;save();}
+  else if(a==='renp'){S.rename=b.dataset.id;}
+  else if(a==='saverename'){const p=DB.players.find(q=>q.id===S.rename),nn=$('rn').value.trim();if(p&&nn){p.name=nn;save();}S.rename=null;}
+  else if(a==='delp'){if(S.confirm==='p'+b.dataset.id){DB.players=DB.players.filter(p=>p.id!==b.dataset.id);save();S.confirm='';}else S.confirm='p'+b.dataset.id;}
+  else if(a==='saveset'){DB.settings.club=$('cl').value.trim();DB.settings.wa=$('wa').value.replace(/\D/g,'');save();toast('Ajustes guardados');}
+  else if(a==='bkdl'){download('poms_copia_'+iso(new Date())+'.json',JSON.stringify(DB),'application/json');return;}
+  else if(a==='bkcopy'){copy(JSON.stringify(DB),'Copia copiada');return;}
+  else if(a==='restore'){try{const o=JSON.parse($('rs').value);if(!o||!Array.isArray(o.players)||!Array.isArray(o.sessions)||!Array.isArray(o.responses))throw 0;DB=Object.assign({players:[],sessions:[],responses:[],settings:{wa:'',club:''}},o);save();S.restoreMsg='Copia restaurada: '+DB.responses.length+' respuestas.';}catch(e){S.restoreMsg='';toast('La copia no es válida');}}
+  else if(a==='wipe'){if(S.confirm==='wipe'){DB={players:[],sessions:[],responses:[],settings:{wa:'',club:''}};save();S.confirm='';S.sid=null;S.pid=null;toast('Datos borrados');}else S.confirm='wipe';}
+  renderCoach();
+});
+
+if(typeof document!=='undefined'&&document.getElementById('app')){FORM?renderForm():renderCoach();}
+</script>
+</body>
+</html>
